@@ -32,10 +32,10 @@ region = EU_WEST_1
 
 1. Add the plugin as a library dependency in `project/plugins.sbt`
 
-    > NO VERSION RELEASED YET, do `sbt +publishLocal` for test purposes
-
     ```sbt
-    libraryDependencies += "com.rtfpessoa" %% "coursier-s3" % "0.1.0-SNAPSHOT"
+    resolvers += Resolver.bintrayRepo("rtfpessoa", "maven")
+    
+    libraryDependencies += "rtfpessoa" %% "coursier-s3" % "0.1.0"
     ```
 
 2. Setup support for `s3c` urls

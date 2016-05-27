@@ -1,10 +1,10 @@
 import sbt.Keys._
 
-organization := "com.rtfpessoa"
+organization := "rtfpessoa"
 
 name := """coursier-s3"""
 
-version := "0.1.0-SNAPSHOT"
+version := "0.1.0"
 
 scalaVersion := "2.10.6"
 
@@ -14,3 +14,8 @@ libraryDependencies ++= Seq(
   "com.github.seratch" %% "awscala" % "0.5.5"
 )
 
+licenses += ("MIT", url("http://opensource.org/licenses/MIT"))
+
+bintrayPackageLabels := Seq("coursier", "sbt", "s3", "aws")
+
+bintrayReleaseOnPublish in ThisBuild := false
