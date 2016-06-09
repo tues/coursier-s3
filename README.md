@@ -1,5 +1,7 @@
 ## S3 Coursier Plugin
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/3da1046e33804ff3ba8783af84210c2c)](https://www.codacy.com/app/paul/coursier-s3?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=rtfpessoa/coursier-s3&amp;utm_campaign=Badge_Grade)
+
 [coursier](https://github.com/alexarchambault/coursier) plugin adding support for s3 dependency resolution.
 
 For compatibility purposes with [fm-sbt-s3-resolver](https://github.com/frugalmechanic/fm-sbt-s3-resolver),
