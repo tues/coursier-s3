@@ -15,13 +15,8 @@ import scala.util.control.NonFatal
 import scala.util.{Properties, Try}
 
 /*
- * To avoid collision with `fm-sbt-s3-resolver` we added a different URL
- * format starting with `s3c` (S3 coursier).
- *
- * This way you can have your resolver URL with `s3c` and your publish URL with `s3`.
- *
  * Our handler only supports one kind of URL:
- * s3c://s3-<region>.amazonaws.com/<bucket-name>
+ * s3://s3-<region>.amazonaws.com/<bucket-name>
  *
  * For now the region in the url is being ignored.
  *
@@ -29,7 +24,7 @@ import scala.util.{Properties, Try}
  * You should provide them as environment variables or
  * in `.s3credentials` in $HOME, $HOME/.sbt, $HOME/.coursier
  */
-class S3cHandlerNotFactory extends URLStreamHandler {
+class S3HandlerNotFactory extends URLStreamHandler {
 
   override def openConnection(url: URL): URLConnection = {
     new URLConnection(url) {
@@ -128,9 +123,9 @@ class S3cHandlerNotFactory extends URLStreamHandler {
 
 }
 
-class S3cHandler extends URLStreamHandlerFactory {
+class S3Handler extends URLStreamHandlerFactory {
   def createURLStreamHandler(protocol: String): URLStreamHandler = protocol match {
-    case "s3c" => new S3cHandlerNotFactory()
+    case "s3" => new S3HandlerNotFactory()
     case _ => null
   }
 }
