@@ -15,7 +15,3 @@ libraryDependencies ++= Seq(
 )
 
 licenses += ("MIT", url("http://opensource.org/licenses/MIT"))
-
-bintrayPackageLabels := Seq("coursier", "sbt", "s3", "aws")
-
-bintrayReleaseOnPublish in ThisBuild := false
