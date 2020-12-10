@@ -29,8 +29,7 @@ import scala.util.{Properties, Try}
  * You should provide them as environment variables or
  * in `.s3credentials` in $HOME, $HOME/.sbt, $HOME/.coursier
  */
-
-class S3cHandler extends URLStreamHandler {
+class S3cHandlerNotFactory extends URLStreamHandler {
 
   override def openConnection(url: URL): URLConnection = {
     new URLConnection(url) {
@@ -129,15 +128,9 @@ class S3cHandler extends URLStreamHandler {
 
 }
 
-object S3cHandler {
-
-  private object S3URLStreamHandlerFactory extends URLStreamHandlerFactory {
-    def createURLStreamHandler(protocol: String): URLStreamHandler = protocol match {
-      case "s3c" => new S3cHandler()
-      case _ => null
-    }
+class S3cHandler extends URLStreamHandlerFactory {
+  def createURLStreamHandler(protocol: String): URLStreamHandler = protocol match {
+    case "s3c" => new S3cHandlerNotFactory()
+    case _ => null
   }
-
-  def setupS3Handler() = URL.setURLStreamHandlerFactory(S3URLStreamHandlerFactory)
-
 }
