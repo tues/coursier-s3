@@ -1,11 +1,8 @@
 ## S3 Coursier Plugin
 
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/3da1046e33804ff3ba8783af84210c2c)](https://www.codacy.com/app/paul/coursier-s3?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=rtfpessoa/coursier-s3&amp;utm_campaign=Badge_Grade)
+[Coursier](https://github.com/alexarchambault/coursier) plugin adding support for S3 dependency resolution. The main purpose of this fork is to enable S3 resolution in Pants 1.27.0+. Also, the original 0.1.0 doesn't work with Coursier 1.1.0-M14 (used by Pants 1.27.0).
 
-[coursier](https://github.com/alexarchambault/coursier) plugin adding support for s3 dependency resolution.
-
-For compatibility purposes with [fm-sbt-s3-resolver](https://github.com/frugalmechanic/fm-sbt-s3-resolver),
-urls use `s3c://` instead of `s3://`.
+This fork uses standard `s3://` scheme unlike the original (which uses `s3c://`), so it's probably not compatible with [fm-sbt-s3-resolver](https://github.com/frugalmechanic/fm-sbt-s3-resolver).
 
 ### Credentials
 
@@ -14,7 +11,7 @@ urls use `s3c://` instead of `s3://`.
 ```sh
 AWS_ACCESS_KEY_ID="myKey"
 AWS_SECRET_ACCESS_KEY="myVeryS3cret"
-AWS_DEFAULT_REGION="EU_WEST_1"
+AWS_DEFAULT_REGION="eu-east-1"
 ```
 
 * File
@@ -27,46 +24,26 @@ accessKey = myKey
 secretKey = myVeryS3cret
 
 # Region
-region = EU_WEST_1
+region = eu-east-1
 ```
 
 ### Usage
 
-1. Add the plugin as a library dependency in `project/plugins.sbt`
+```shell
+$ coursier bootstrap coursier:1.1.0-M14 rtfpessoa:coursier-s3_2.12:0.2.0-SNAPSHOT --assembly -o coursier-1.1.0-M14-s3.sh
+$ tail -c +458 coursier-1.1.0-M14-s3.sh > coursier-1.1.0-M14-s3.jar
+```
 
-    ```sbt
-    resolvers += Resolver.bintrayRepo("rtfpessoa", "maven")
-    
-    libraryDependencies += "rtfpessoa" %% "coursier-s3" % "0.1.0"
-    ```
+Now you can tell Pants to use your custom Coursier version instead of the official one:
 
-2. Setup support for `s3c` urls
+```ini
+[coursier]
+repos = """
++[
+    's3://s3.amazonaws.com/your-bucket/some/path',
+  ]
+"""
+bootstrap_jar_urls = ['file:///path/to/coursier-1.1.0-M14-s3.jar']
+```
 
-    > This step is required to add support for `s3c` URLs in the JVM
-
-    * **Option 1** - create object in `project/Common.scala`
-
-    ```scala
-    import coursier.cache.protocol.S3cHandler
-
-    object Common {
-        S3cHandler.setupS3Handler()
-    }
-    ```
-
-    * **Option 2** -  add it to `build.sbt`
-
-    ```scala
-    import coursier.cache.protocol.S3cHandler
-    S3cHandler.setupS3Handler()
-    ```
-
-3. Add s3 resolvers, without or with ivy patterns (use `s3c` to prefix the url)
-
-    ```sbt
-    resolvers += "S3 resolver" at "s3c://s3-eu-west-1.amazonaws.com/private.mvn.example.com"
-    ```
-
-    ```sbt
-    resolvers += Resolver.url("S3 resolver", url("s3c://s3-eu-west-1.amazonaws.com/private.mvn.example.com"))(Resolver.defaultIvyPatterns)
-    ```
+You may need to `rm "$HOME/.cache/pants/bin/coursier/1.1.0.cf365ea27a710d5f09db1f0a6feee129aa1fc417/coursier` if Pants has already downloaded the official JAR.
