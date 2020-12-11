@@ -30,6 +30,7 @@ region = eu-east-1
 ### Usage
 
 ```shell
+$ sbt publishLocal
 $ coursier bootstrap coursier:1.1.0-M14 rtfpessoa:coursier-s3_2.12:0.2.0-SNAPSHOT --assembly -o coursier-1.1.0-M14-s3.sh
 $ tail -c +458 coursier-1.1.0-M14-s3.sh > coursier-1.1.0-M14-s3.jar
 ```
