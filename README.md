@@ -6,13 +6,14 @@ This fork uses standard `s3://` scheme unlike the original (which uses `s3c://`)
 
 ### Credentials
 
-* Environment
+* AWS
 
-```sh
-AWS_ACCESS_KEY_ID="myKey"
-AWS_SECRET_ACCESS_KEY="myVeryS3cret"
-AWS_DEFAULT_REGION="eu-east-1"
-```
+If you have an AWS profile called "artifacts", credentials will be read from there. Otherwise they will
+be read from the [default](https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/auth/DefaultAWSCredentialsProviderChain.html)
+AWS chain.
+
+Region will be read from the [default](https://sdk.amazonaws.com/java/api/latest/software/amazon/awssdk/regions/providers/DefaultAwsRegionProviderChain.html)
+AWS chain.
 
 * File
 

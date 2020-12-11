@@ -7,12 +7,15 @@ import java.nio.file.{Path, Paths}
 
 import awscala.Credentials
 import awscala.s3.{Bucket, S3, S3Object}
+import com.amazonaws.auth.profile.ProfileCredentialsProvider
+import com.amazonaws.auth.DefaultAWSCredentialsProviderChain
+import com.amazonaws.regions.DefaultAwsRegionProviderChain
 import com.amazonaws.services.s3.model.GetObjectRequest
 
 import scala.collection.breakOut
 import scala.io.{Codec, Source}
-import scala.util.control.NonFatal
 import scala.util.{Properties, Try}
+import scala.util.control.NonFatal
 
 /*
  * Our handler only supports one kind of URL:
@@ -21,8 +24,15 @@ import scala.util.{Properties, Try}
  * For now the region in the url is being ignored.
  *
  * It does not support credentials in the URLs for security reasons.
- * You should provide them as environment variables or
- * in `.s3credentials` in $HOME, $HOME/.sbt, $HOME/.coursier
+ *
+ * You should provide credentials in one of the following places:
+ * 1. In a "artifacts" AWS profile
+ * 2. Anywhere in the default AWS chain: https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/auth/DefaultAWSCredentialsProviderChain.html
+ * 3. In a`.s3credentials` file at $HOME, $HOME/.sbt, $HOME/.coursier
+ *
+ * You should provide region in one of the following places:
+ * 1. Anywhere in the default AWS chain: https://sdk.amazonaws.com/java/api/latest/software/amazon/awssdk/regions/providers/DefaultAwsRegionProviderChain.html
+ * 2. In a`.s3credentials` file at $HOME, $HOME/.sbt, $HOME/.coursier
  */
 class S3HandlerNotFactory extends URLStreamHandler {
 
@@ -58,25 +68,33 @@ class S3HandlerNotFactory extends URLStreamHandler {
   }
 
   private def getClient: Option[S3] = {
-    readFromEnv
+    readFromArtifactsProfile
+      .orElse(readfromAwsChain)
       .orElse(readFromFile(Paths.get("").toAbsolutePath))
       .orElse(readFromFile(Paths.get(Properties.userHome)))
       .orElse(readFromFile(Paths.get(Properties.userHome).resolve(".sbt")))
       .orElse(readFromFile(Paths.get(Properties.userHome).resolve(".coursier")))
   }
 
-  private def readFromEnv: Option[S3] = {
-    for {
-      accessKey <- sys.env.get("AWS_ACCESS_KEY_ID")
-      secretKey <- sys.env.get("AWS_SECRET_ACCESS_KEY")
-    } yield {
-      val region = sys.env.get("AWS_DEFAULT_REGION")
-        .map(awscala.Region.apply)
-        .getOrElse(awscala.Region.EU_WEST_1)
+  private def readFromArtifactsProfile: Option[S3] = Try {
+    val regionProv = new DefaultAwsRegionProviderChain()
+    val credProv = new ProfileCredentialsProvider("artifacts")
 
-      S3(Credentials(accessKey, secretKey))(region)
-    }
-  }
+    S3(Credentials(
+      credProv.getCredentials.getAWSAccessKeyId,
+      credProv.getCredentials.getAWSSecretKey
+    ))(awscala.Region(regionProv.getRegion))
+  }.toOption
+
+  private def readfromAwsChain: Option[S3] = Try {
+    val regionProv = new DefaultAwsRegionProviderChain()
+    val credProv = new DefaultAWSCredentialsProviderChain()
+
+    S3(Credentials(
+      credProv.getCredentials.getAWSAccessKeyId,
+      credProv.getCredentials.getAWSSecretKey
+    ))(awscala.Region(regionProv.getRegion))
+  }.toOption
 
   private def readFromFile(path: Path): Option[S3] = {
     val file = path.resolve(".s3credentials").toFile
